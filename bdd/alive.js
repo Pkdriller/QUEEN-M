@@ -2,56 +2,73 @@ const fs = require('fs');
 const path = require('path');
 const filePath = path.join(__dirname, '../xmd/alive.json');
 
+// Default settings
+const defaultSettings = {
+  message: "NEXUS-AI is alive!",
+  lien: "",
+  show_uptime: true,
+  show_owner: true,
+  owner_name_override: ""
+};
+
 // Load data from JSON file
 function loadAliveData() {
   try {
-    const data = fs.readFileSync(filePath, 'utf8');
-    return JSON.parse(data);
+    if (fs.existsSync(filePath)) {
+      const data = fs.readFileSync(filePath, 'utf8');
+      const parsedData = JSON.parse(data);
+      // Merge with defaults to ensure all keys are present
+      return { ...defaultSettings, ...parsedData };
+    }
+    return { ...defaultSettings }; // Return default if file doesn't exist
   } catch (err) {
-    return { id: 1, message: '', lien: '' }; // Default if file doesn't exist
+    console.error("Error loading alive data, returning defaults:", err);
+    return { ...defaultSettings }; // Return default on error
   }
 }
 
 // Save data to JSON file
 function saveAliveData(data) {
-  fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
+  // Ensure we only save the defined fields, excluding any old 'id' field
+  const dataToSave = {
+    message: data.message !== undefined ? data.message : defaultSettings.message,
+    lien: data.lien !== undefined ? data.lien : defaultSettings.lien,
+    show_uptime: data.show_uptime !== undefined ? data.show_uptime : defaultSettings.show_uptime,
+    show_owner: data.show_owner !== undefined ? data.show_owner : defaultSettings.show_owner,
+    owner_name_override: data.owner_name_override !== undefined ? data.owner_name_override : defaultSettings.owner_name_override,
+  };
+  fs.writeFileSync(filePath, JSON.stringify(dataToSave, null, 2));
 }
 
 // Create default data if not exists
 if (!fs.existsSync(filePath)) {
-  saveAliveData({ id: 1, message: '', lien: '' });
+  saveAliveData({ ...defaultSettings });
 }
 
-// Function to add or update data in 'alive'
-async function addOrUpdateDataInAlive(message, lien) {
+// Function to update settings in 'alive'
+async function updateAliveSettings(newSettings) {
   try {
-    const data = loadAliveData();
-    data.message = message;
-    data.lien = lien;
-    saveAliveData(data);
-    console.log("Data successfully added or updated in 'alive'.");
+    const currentData = loadAliveData();
+    const updatedData = { ...currentData, ...newSettings };
+    saveAliveData(updatedData);
+    console.log("Alive settings updated.");
   } catch (error) {
-    console.error("Error while adding or updating data in 'alive':", error);
+    console.error("Error while updating alive settings:", error);
   }
 }
 
 // Function to get data from 'alive'
 async function getDataFromAlive() {
   try {
-    const data = loadAliveData();
-    if (data.message && data.lien) {
-      return { message: data.message, lien: data.lien };
-    } else {
-      console.log("No data found in 'alive'.");
-      return null;
-    }
+    const data = loadAliveData(); // This now always returns a full object with defaults
+    return data;
   } catch (error) {
-    console.error("Error while retrieving data from 'alive':", error);
-    return null;
+    console.error("Error while retrieving alive data:", error);
+    return { ...defaultSettings }; // Return defaults in case of an unexpected error
   }
 }
 
 module.exports = {
-  addOrUpdateDataInAlive,
+  updateAliveSettings,
   getDataFromAlive,
 };
