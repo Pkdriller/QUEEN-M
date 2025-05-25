@@ -1,6 +1,5 @@
 let { smd } = require("../lib");
 const axios = require("axios");
-const fetch = require("node-fetch");
 
 smd(
   {
@@ -14,8 +13,8 @@ smd(
   async (message, input) => {
     try {
       const apiUrl = "https://api.maher-zubair.tech/details/wabetainfo";
-      const response = await fetch(apiUrl);
-      const data = await response.json();
+      const response = await axios.get(apiUrl);
+      const data = response.data;
 
       if (!data || data.status !== 200 || !data.result) {
         return message.send("*Failed to fetch WhatsApp beta news.*");
@@ -65,8 +64,8 @@ smd(
   async (message, input) => {
     try {
       const apiUrl = "https://api.maher-zubair.tech/details/ios";
-      const response = await fetch(apiUrl);
-      const data = await response.json();
+      const response = await axios.get(apiUrl);
+      const data = response.data;
 
       if (!data || data.status !== 200 || !data.result) {
         return message.send("*Failed to fetch iOS news.*");
@@ -152,8 +151,8 @@ smd(
   async (m) => {
     try {
       const apiUrl = "https://api.spaceflightnewsapi.net/v4/articles/";
-      const response = await fetch(apiUrl);
-      const data = await response.json();
+      const response = await axios.get(apiUrl);
+      const data = response.data;
 
       if (!data || !data.results || data.results.length === 0) {
         return await m.send(
@@ -228,8 +227,8 @@ smd(
   async (m) => {
     try {
       const apiUrl = "https://api.maher-zubair.tech/details/population";
-      const response = await fetch(apiUrl);
-      const data = await response.json();
+      const response = await axios.get(apiUrl);
+      const data = response.data;
 
       if (!data || data.status !== 200 || !data.result) {
         return await m.send("*Failed to fetch population statistics.*");
@@ -266,8 +265,8 @@ smd(
       const query = m.text.split(' ').slice(1).join(' ');
       if (!query) return client.sendMessage(m.from, { text: 'Please provide an anime title to search.' }, { quoted: m });
 
-      const response = await fetch(`https://api.maher-zubair.tech/anime/search?q=${encodeURIComponent(query)}`);
-      const data = await response.json();
+      const response = await axios.get(`https://api.maher-zubair.tech/anime/search?q=${encodeURIComponent(query)}`);
+      const data = response.data;
 
       if (data.status !== 200) return client.sendMessage(m.from, { text: `Error: ${data.result}` }, { quoted: m });
 

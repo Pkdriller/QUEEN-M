@@ -5,6 +5,7 @@ const { format } = require(__dirname + "/../framework/mesfonctions");
 const os = require("os");
 const moment = require("moment-timezone");
 const s = require(__dirname + "/../set");
+const { MENU_SOURCE_URL } = require(__dirname + "/../set");
 
 zokou({ nomCom: "menu2", categorie: "General" }, async (dest, zk, commandeOptions) => {
     let { ms, repondre ,prefixe,nomAuteurMessage,mybotpic} = commandeOptions;
@@ -28,7 +29,7 @@ zokou({ nomCom: "menu2", categorie: "General" }, async (dest, zk, commandeOption
 
     moment.tz.setDefault('Etc/GMT');
 
-// Créer une date et une heure en GMT
+// Create date and time in GMT
 const temps = moment().format('HH:mm:ss');
 const date = moment().format('DD/MM/YYYY');
 
@@ -36,12 +37,12 @@ const date = moment().format('DD/MM/YYYY');
 ╭────《J𝖀𝗦𝐓Λ-𝗧𝙕 𝚳𝐃》────
 ┴  ╭─────────────
 │❒⁠⁠⁠⁠│ *ADMIN* : ${s.OWNER_NAME}
-│❒│⁠⁠⁠⁠ *CALENDER* : ${date}
+│❒│⁠⁠⁠⁠ *CALENDAR* : ${date}
 │❒│⁠⁠⁠⁠ *PREFIX* : ${s.PREFIXE}
 │❒⁠⁠⁠⁠│⁠⁠⁠ *BOT IS IN* : ${mode} mode
-│❒│⁠⁠⁠⁠ *ORDERS* : ${cm.length} 
+│❒│⁠⁠⁠⁠ *COMMANDS* : ${cm.length} 
 │❒│⁠⁠⁠⁠ *SPACE* : ${format(os.totalmem() - os.freemem())}/${format(os.totalmem())}
-│❒│⁠⁠⁠⁠ *CHROME* : ${os.platform()}
+│❒│⁠⁠⁠⁠ *PLATFORM* : ${os.platform()}
 │❒│⁠⁠⁠⁠ *THEME* : *NEXUS-AI 🚀*
 ┬  ╰──────────────
 ╰─── ··《NEXUS-AI》··──\n`;
@@ -52,7 +53,7 @@ let menuMsg = `
  ─────────
 
 
- *ℂ𝕆𝕄𝕄𝔸ℕ𝔻𝕊*
+ *COMMANDS*
 `;
 
     for (const cat in coms) {
@@ -75,26 +76,27 @@ var lien = mybotpic();
 
 if (lien.match(/\.(mp4|gif)$/i)) {
  try {
-     zk.sendMessage(dest, { video: { url: lien }, caption:infoMsg + menuMsg, footer: "Je suis *kavishanmd*, déveloper kavishan Tech" , gifPlayback : true }, { quoted: ms });
+     zk.sendMessage(dest, { video: { url: lien }, caption:infoMsg + menuMsg, footer: "Powered by NEXUS-AI" , gifPlayback : true }, { quoted: ms });
  }
  catch (e) {
-     console.log("🥵🥵 Menu erreur " + e);
-     repondre("🥵🥵 Menu erreur " + e);
+     console.error("Error sending media message in menu:", e);
+     repondre("Error sending menu media: " + e.message);
  }
 } 
-// Vérification pour .jpeg ou .png
+// Verification for .jpeg or .png
 else if (lien.match(/\.(jpeg|png|jpg)$/i)) {
  try {
-     zk.sendMessage(dest, { image: { url: lien }, caption:infoMsg + menuMsg, footer: "Je suis *kavishanmd*, déveloper kavishan Tech" }, { quoted: ms });
+     zk.sendMessage(dest, { image: { url: lien }, caption:infoMsg + menuMsg, footer: "Powered by NEXUS-AI" }, { quoted: ms });
  }
  catch (e) {
-     console.log("🥵🥵 Menu erreur " + e);
-     repondre("🥵🥵 Menu erreur " + e);
+     console.error("Error sending media message in menu:", e);
+     repondre("Error sending menu media: " + e.message);
  }
 }
 // Send a text message with the hidden Source URL
 else {
     try {
+        const sourceUrl = MENU_SOURCE_URL; // Define sourceUrl here
         zk.sendMessage(dest, {
             text: infoMsg + menuMsg,
             contextInfo: {
@@ -107,6 +109,6 @@ else {
         }, { quoted: ms });
     } catch (e) {
         console.error("Error sending menu message:", e);
-        repondre("🥵🥵 Menu erreur " + e.message);
+        repondre("Error sending menu: " + e.message);
     }
 }
