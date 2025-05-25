@@ -24,59 +24,68 @@ if (!fs.existsSync(filePath)) {
   saveWarnData({});
 }
 
-// Function to add or update the warning count for a user (jid)
-async function ajouterUtilisateurAvecWarnCount(jid) {
+// Function to add or update the warning count for a user (jid) in a specific group
+async function ajouterUtilisateurAvecWarnCount(groupId, jid, reason = "No reason provided") {
   try {
     const data = loadWarnData();
 
-    // If the jid is already in the data, increment the warn count
-    if (data[jid]) {
-      data[jid].warn_count += 1;
-    } else {
-      // Otherwise, create a new entry with a warn_count of 1
-      data[jid] = { warn_count: 1 };
+    // Ensure group exists
+    if (!data[groupId]) {
+      data[groupId] = {};
     }
+
+    // Ensure user exists in group
+    if (!data[groupId][jid]) {
+      data[groupId][jid] = { count: 0, details: [] };
+    }
+
+    data[groupId][jid].count += 1;
+    const timestamp = new Date().toISOString();
+    data[groupId][jid].details.push({ reason: reason, timestamp: timestamp });
 
     saveWarnData(data);
-    console.log(`Utilisateur ${jid} ajouté ou mis à jour avec un warn_count de ${data[jid].warn_count}.`);
+    console.log(`User ${jid} in group ${groupId} updated/added. New warn count: ${data[groupId][jid].count}.`);
   } catch (error) {
-    console.error("Erreur lors de l'ajout ou de la mise à jour de l'utilisateur :", error);
+    console.error("Error adding or updating user warn count:", error);
   }
 }
 
-// Function to get the warning count for a user (jid)
-async function getWarnCountByJID(jid) {
+// Function to get the warning count and details for a user (jid) in a specific group
+async function getWarnCountAndDetailsByJID(groupId, jid) {
   try {
     const data = loadWarnData();
 
-    // Return the warn_count of the user or 0 if the user doesn't exist
-    return data[jid] ? data[jid].warn_count : 0;
-  } catch (error) {
-    console.error("Erreur lors de la récupération du warn_count :", error);
-    return -1; // Return a default error value
-  }
-}
-
-// Function to reset the warning count for a user (jid)
-async function resetWarnCountByJID(jid) {
-  try {
-    const data = loadWarnData();
-
-    // Reset the warn_count to 0 for the specified jid
-    if (data[jid]) {
-      data[jid].warn_count = 0;
-      saveWarnData(data);
-      console.log(`Le warn_count de l'utilisateur ${jid} a été réinitialisé à 0.`);
+    if (data[groupId] && data[groupId][jid]) {
+      return data[groupId][jid];
     } else {
-      console.log(`Utilisateur ${jid} non trouvé.`);
+      return { count: 0, details: [] }; // Default if user or group not found
     }
   } catch (error) {
-    console.error("Erreur lors de la réinitialisation du warn_count :", error);
+    console.error("Error retrieving warn count and details:", error);
+    return { count: 0, details: [] }; // Default error value
+  }
+}
+
+// Function to reset the warning count and details for a user (jid) in a specific group
+async function resetWarnCountByJID(groupId, jid) {
+  try {
+    const data = loadWarnData();
+
+    if (data[groupId] && data[groupId][jid]) {
+      data[groupId][jid].count = 0;
+      data[groupId][jid].details = [];
+      saveWarnData(data);
+      console.log(`Warn count for user ${jid} in group ${groupId} has been reset.`);
+    } else {
+      console.log(`User ${jid} in group ${groupId} not found or no warnings to reset.`);
+    }
+  } catch (error) {
+    console.error("Error resetting warn count:", error);
   }
 }
 
 module.exports = {
   ajouterUtilisateurAvecWarnCount,
-  getWarnCountByJID,
+  getWarnCountAndDetailsByJID, // Updated function name
   resetWarnCountByJID,
 };
